@@ -22,110 +22,146 @@ export function TennisCourtsMap({ tennisCourts }: TennisCourtsMapProps) {
   const router = useRouter()
   const mapRef = useRef<HTMLDivElement>(null)
   const [mapLoaded, setMapLoaded] = useState(false)
-  const markersRef = useRef<google.maps.Marker[]>([])
-  const mapInstanceRef = useRef<google.maps.Map | null>(null)
+  const markersRef = useRef<any[]>([])
+  const mapInstanceRef = useRef<any>(null)
+  const [isScriptLoaded, setIsScriptLoaded] = useState(false)
 
   // Inicjalizacja mapy Google
   const initializeMap = useCallback(() => {
-    if (!mapRef.current) return
+    if (!mapRef.current || !window.google || !window.google.maps) {
+      console.log("Cannot initialize map: mapRef or google.maps not available")
+      return
+    }
 
     console.log("Initializing map...")
 
-    const mapOptions = {
-      center: { lat: 52.069, lng: 19.4803 }, // Centrum Polski
-      zoom: 7,
-      mapTypeControl: true,
-      streetViewControl: false,
-      fullscreenControl: true,
-    }
+    try {
+      const mapOptions = {
+        center: { lat: 52.069, lng: 19.4803 }, // Centrum Polski
+        zoom: 7,
+        mapTypeControl: true,
+        streetViewControl: false,
+        fullscreenControl: true,
+      }
 
-    const newMap = new window.google.maps.Map(mapRef.current, mapOptions)
-    mapInstanceRef.current = newMap
-    setMapLoaded(true)
+      const newMap = new window.google.maps.Map(mapRef.current, mapOptions)
+      mapInstanceRef.current = newMap
+      setMapLoaded(true)
+      console.log("Map initialized successfully")
+    } catch (error) {
+      console.error("Error initializing map:", error)
+    }
   }, [])
 
   // Dodawanie markerów na mapie
   const addMarkers = useCallback(() => {
-    if (!mapInstanceRef.current) return
+    if (!mapInstanceRef.current || !window.google || !window.google.maps) {
+      console.log("Cannot add markers: map instance or google.maps not available")
+      return
+    }
 
     console.log("Adding markers...")
 
-    // Usuń istniejące markery
-    markersRef.current.forEach((marker) => marker.setMap(null))
-    markersRef.current = []
+    try {
+      // Usuń istniejące markery
+      markersRef.current.forEach((marker) => marker.setMap(null))
+      markersRef.current = []
 
-    // Dodaj markery dla każdego kortu
-    const newMarkers: google.maps.Marker[] = []
-    tennisCourts.forEach((court) => {
-      console.log(`Adding marker for ${court.name} at lat: ${court.latitude}, lng: ${court.longitude}`)
+      // Dodaj markery dla każdego kortu
+      const newMarkers: any[] = []
+      tennisCourts.forEach((court) => {
+        console.log(`Adding marker for ${court.name} at lat: ${court.latitude}, lng: ${court.longitude}`)
 
-      const marker = new window.google.maps.Marker({
-        position: { lat: court.latitude, lng: court.longitude },
-        map: mapInstanceRef.current,
-        title: court.name,
-        animation: window.google.maps.Animation.DROP,
+        const marker = new window.google.maps.Marker({
+          position: { lat: court.latitude, lng: court.longitude },
+          map: mapInstanceRef.current,
+          title: court.name,
+          animation: window.google.maps.Animation.DROP,
+        })
+
+        // Dodaj okno informacyjne po kliknięciu na marker
+        const infoWindow = new window.google.maps.InfoWindow({
+          content: `
+            <div style="padding: 10px;">
+              <h3 style="margin: 0 0 5px 0; font-weight: bold;">${court.name}</h3>
+              <p style="margin: 0 0 5px 0;">${court.address}</p>
+              <a href="/courts/${court.id}" style="color: blue; text-decoration: underline;">Zobacz szczegóły</a>
+            </div>
+          `,
+        })
+
+        marker.addListener("click", () => {
+          infoWindow.open(mapInstanceRef.current, marker)
+        })
+
+        newMarkers.push(marker)
       })
 
-      // Dodaj okno informacyjne po kliknięciu na marker
-      const infoWindow = new window.google.maps.InfoWindow({
-        content: `
-          <div style="padding: 10px;">
-            <h3 style="margin: 0 0 5px 0; font-weight: bold;">${court.name}</h3>
-            <p style="margin: 0 0 5px 0;">${court.address}</p>
-            <a href="/courts/${court.id}" style="color: blue; text-decoration: underline;">Zobacz szczegóły</a>
-          </div>
-        `,
-      })
+      markersRef.current = newMarkers
 
-      marker.addListener("click", () => {
-        infoWindow.open(mapInstanceRef.current, marker)
-      })
+      // Dostosuj widok mapy, aby pokazać wszystkie markery
+      if (newMarkers.length > 0) {
+        const bounds = new window.google.maps.LatLngBounds()
+        newMarkers.forEach((marker) => {
+          bounds.extend(marker.getPosition()!)
+        })
+        mapInstanceRef.current.fitBounds(bounds)
 
-      newMarkers.push(marker)
-    })
-
-    markersRef.current = newMarkers
-
-    // Dostosuj widok mapy, aby pokazać wszystkie markery
-    if (newMarkers.length > 0) {
-      const bounds = new window.google.maps.LatLngBounds()
-      newMarkers.forEach((marker) => {
-        bounds.extend(marker.getPosition()!)
-      })
-      mapInstanceRef.current.fitBounds(bounds)
-
-      // Jeśli jest tylko jeden marker, ustaw odpowiedni zoom
-      if (newMarkers.length === 1) {
-        setTimeout(() => {
-          if (mapInstanceRef.current) {
-            mapInstanceRef.current.setZoom(15)
-          }
-        }, 100)
+        // Jeśli jest tylko jeden marker, ustaw odpowiedni zoom
+        if (newMarkers.length === 1) {
+          setTimeout(() => {
+            if (mapInstanceRef.current) {
+              mapInstanceRef.current.setZoom(15)
+            }
+          }, 100)
+        }
       }
+    } catch (error) {
+      console.error("Error adding markers:", error)
     }
   }, [tennisCourts])
+
+  // Sprawdzenie, czy Google Maps API jest załadowane
+  const checkIfGoogleMapsLoaded = useCallback(() => {
+    return window.google && window.google.maps
+  }, [])
 
   // Ładowanie Google Maps API
   useEffect(() => {
     // Definiujemy funkcję inicjalizacji mapy w globalnym obiekcie window
-    window.initMap = initializeMap
+    window.initMap = () => {
+      console.log("Google Maps API loaded via callback")
+      setIsScriptLoaded(true)
+      initializeMap()
+    }
 
     const loadGoogleMapsAPI = () => {
       // Sprawdź, czy skrypt już istnieje
       if (document.querySelector('script[src*="maps.googleapis.com/maps/api"]')) {
-        window.initMap()
+        console.log("Google Maps script already exists in document")
+        if (checkIfGoogleMapsLoaded()) {
+          console.log("Google Maps API already loaded")
+          setIsScriptLoaded(true)
+          initializeMap()
+        }
         return
       }
 
+      console.log("Loading Google Maps API script...")
       const script = document.createElement("script")
       script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places&callback=initMap`
       script.async = true
       script.defer = true
+      script.onerror = () => {
+        console.error("Error loading Google Maps API script")
+      }
       document.head.appendChild(script)
     }
 
     // Sprawdź, czy API Google Maps jest już załadowane
-    if (window.google && window.google.maps) {
+    if (checkIfGoogleMapsLoaded()) {
+      console.log("Google Maps API already loaded on mount")
+      setIsScriptLoaded(true)
       initializeMap()
     } else {
       loadGoogleMapsAPI()
@@ -134,21 +170,19 @@ export function TennisCourtsMap({ tennisCourts }: TennisCourtsMapProps) {
     // Cleanup function
     return () => {
       // Usuń markery przy odmontowaniu komponentu
-      if (markersRef.current) {
+      if (markersRef.current && window.google && window.google.maps) {
         markersRef.current.forEach((marker) => marker.setMap(null))
         markersRef.current = []
       }
-      // Usuń globalną funkcję initMap
-      delete window.initMap
     }
-  }, [initializeMap])
+  }, [initializeMap, checkIfGoogleMapsLoaded])
 
   // Dodaj markery, gdy mapa jest gotowa i korty są dostępne
   useEffect(() => {
-    if (mapLoaded && tennisCourts.length > 0) {
+    if (mapLoaded && tennisCourts.length > 0 && isScriptLoaded) {
       addMarkers()
     }
-  }, [mapLoaded, tennisCourts, addMarkers])
+  }, [mapLoaded, tennisCourts, addMarkers, isScriptLoaded])
 
   return (
     <Card className="col-span-1">

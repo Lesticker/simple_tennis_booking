@@ -91,7 +91,7 @@ export function BookingForm({ onSuccess, courtId }: BookingFormProps) {
       const endTime = new Date(startTime)
       endTime.setHours(endTime.getHours() + 1)
 
-      await createBooking({
+      const result = await createBooking({
         firstName,
         lastName,
         startTime: startTime.toISOString(),
@@ -99,27 +99,39 @@ export function BookingForm({ onSuccess, courtId }: BookingFormProps) {
         courtId,
       })
 
-      toast({
-        title: "Rezerwacja potwierdzona!",
-        description: `Twój kort jest zarezerwowany na ${format(date as Date, "d MMMM yyyy", { locale: pl })} o godzinie ${time}.`,
-      })
+      if (result.success) {
+        toast({
+          title: "Rezerwacja potwierdzona!",
+          description: `Twój kort jest zarezerwowany na ${format(date as Date, "d MMMM yyyy", {
+            locale: pl,
+          })} o godzinie ${time}.`,
+        })
 
-      // Reset form
-      setFirstName("")
-      setLastName("")
-      setDate(undefined)
-      setTime(undefined)
+        // Reset form
+        setFirstName("")
+        setLastName("")
+        setDate(undefined)
+        setTime(undefined)
 
-      // Refresh data
-      if (onSuccess) {
-        onSuccess()
+        // Refresh data
+        if (onSuccess) {
+          onSuccess()
+        }
+
+        router.refresh()
+      } else {
+        // Wyświetl szczegółowy komunikat błędu
+        toast({
+          title: "Błąd",
+          description: result.error || "Wystąpił błąd podczas przetwarzania rezerwacji.",
+          variant: "destructive",
+        })
       }
-
-      router.refresh()
     } catch (error) {
+      console.error("Error submitting form:", error)
       toast({
         title: "Błąd",
-        description: "Ten termin jest już zarezerwowany lub wystąpił błąd podczas przetwarzania rezerwacji.",
+        description: "Wystąpił nieoczekiwany błąd podczas przetwarzania rezerwacji.",
         variant: "destructive",
       })
     } finally {

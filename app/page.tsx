@@ -1,6 +1,7 @@
 import { TennisCourtsMap } from "@/components/tennis-courts-map"
 import { TennisCourtsList } from "@/components/tennis-courts-list"
 import { getTennisCourts } from "@/lib/tennis-courts"
+import { Suspense } from "react"
 
 export default async function Home() {
   const tennisCourts = await getTennisCourts()
@@ -13,7 +14,9 @@ export default async function Home() {
       </header>
 
       <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-[1fr_350px]">
-        <TennisCourtsMap tennisCourts={tennisCourts} />
+        <Suspense fallback={<div className="h-[500px] flex items-center justify-center">Ładowanie mapy...</div>}>
+          <TennisCourtsMap tennisCourts={tennisCourts} />
+        </Suspense>
         <TennisCourtsList tennisCourts={tennisCourts} />
       </div>
     </div>

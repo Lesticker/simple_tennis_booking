@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "id": "2afcbf72-7720-4323-812a-9dc1bd4a35fa",
+    "firstName": "xyz",
+    "lastName": "dawido",
+    "startTime": "2025-05-15T02:00:00.000Z",
+    "endTime": "2025-05-15T03:00:00.000Z",
+    "courtId": "2"
+  }
+]

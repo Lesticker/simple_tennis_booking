@@ -1,26 +1,20 @@
 import fs from "fs/promises"
 import path from "path"
 import type { TennisCourt } from "./types"
+import { getDataDirectory } from "./data-directory"
 
-const tennisCourtFilePath = path.join(process.cwd(), "data", "tennis-courts.json")
-
-// Ensure the data directory exists
-async function ensureDataDirectory() {
-  const dataDir = path.join(process.cwd(), "data")
-  try {
-    await fs.access(dataDir)
-  } catch (error) {
-    console.log("Creating data directory...")
-    await fs.mkdir(dataDir, { recursive: true })
-  }
+// Pobierz ścieżkę do katalogu danych
+const getTennisCourtFilePath = async () => {
+  const dataDir = await getDataDirectory()
+  return path.join(dataDir, "tennis-courts.json")
 }
 
 export async function getTennisCourts(): Promise<TennisCourt[]> {
   try {
-    await ensureDataDirectory()
+    const tennisCourtFilePath = await getTennisCourtFilePath()
+    console.log("Reading tennis courts from:", tennisCourtFilePath)
 
     try {
-      console.log("Reading tennis courts from:", tennisCourtFilePath)
       const data = await fs.readFile(tennisCourtFilePath, "utf8")
       const courts = JSON.parse(data)
       console.log(`Found ${courts.length} tennis courts`)
@@ -66,7 +60,7 @@ export async function getTennisCourtById(id: string): Promise<TennisCourt | null
 
 export async function saveTennisCourts(courts: TennisCourt[]): Promise<void> {
   try {
-    await ensureDataDirectory()
+    const tennisCourtFilePath = await getTennisCourtFilePath()
     console.log(`Saving ${courts.length} tennis courts to:`, tennisCourtFilePath)
     await fs.writeFile(tennisCourtFilePath, JSON.stringify(courts, null, 2), "utf8")
     console.log("Tennis courts saved successfully")
