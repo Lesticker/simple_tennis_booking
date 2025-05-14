@@ -1,0 +1,90 @@
+[
+  {
+    "id": "1",
+    "name": "Kort Tenisowy Słowik",
+    "address": "Równoległa 74A, 42-263 Słowik",
+    "description": "Darmowy kort tenisowy z nawierzchnią z mączki ceglanej, dostępny dla wszystkich mieszkańców. Kort jest ogrodzony i posiada podstawowe oznaczenia linii. Idealny do gry rekreacyjnej i nauki tenisa.",
+    "imageUrl": "/images/court-slowik.png",
+    "latitude": 50.748,
+    "longitude": 19.178,
+    "features": [
+      "Darmowy",
+      "Nawierzchnia ceglana",
+      "Ogrodzony"
+    ],
+    "openingHours": {
+      "monday": {
+        "open": "08:00",
+        "close": "20:00"
+      },
+      "tuesday": {
+        "open": "08:00",
+        "close": "20:00"
+      },
+      "wednesday": {
+        "open": "08:00",
+        "close": "20:00"
+      },
+      "thursday": {
+        "open": "08:00",
+        "close": "20:00"
+      },
+      "friday": {
+        "open": "08:00",
+        "close": "20:00"
+      },
+      "saturday": {
+        "open": "09:00",
+        "close": "19:00"
+      },
+      "sunday": {
+        "open": "09:00",
+        "close": "19:00"
+      }
+    }
+  },
+  {
+    "name": "Kort tenisowy w Poraju",
+    "address": "Górnicza 18, 42-360 Poraj",
+    "description": "Kort tenisowy w Poraju",
+    "imageUrl": "https://www.ugporaj.pl/files/pl/DSC-0318%20-%20Kopia.jpg",
+    "latitude": 50.677363,
+    "longitude": 19.209322,
+    "features": [
+      "Darmowy",
+      "Nawierzchnia-dywan",
+      "ogrodzony"
+    ],
+    "openingHours": {
+      "monday": {
+        "open": "08:00",
+        "close": "20:00"
+      },
+      "tuesday": {
+        "open": "08:00",
+        "close": "20:00"
+      },
+      "wednesday": {
+        "open": "08:00",
+        "close": "20:00"
+      },
+      "thursday": {
+        "open": "08:00",
+        "close": "20:00"
+      },
+      "friday": {
+        "open": "08:00",
+        "close": "20:00"
+      },
+      "saturday": {
+        "open": "09:00",
+        "close": "19:00"
+      },
+      "sunday": {
+        "open": "09:00",
+        "close": "19:00"
+      }
+    },
+    "id": "2"
+  }
+]
