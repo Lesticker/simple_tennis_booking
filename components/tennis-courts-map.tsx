@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MapIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
 import type { TennisCourt } from "@/lib/types"
+import { GOOGLE_MAPS_API_KEY } from "@/lib/config"
 
 interface TennisCourtsMapProps {
   tennisCourts: TennisCourt[]
@@ -116,6 +117,10 @@ export function TennisCourtsMap({ tennisCourts }: TennisCourtsMapProps) {
           }, 100)
         }
       }
+
+      console.log("Map instance:", mapInstanceRef.current)
+      console.log("Google Maps object:", window.google.maps)
+      console.log("Number of courts:", tennisCourts.length)
     } catch (error) {
       console.error("Error adding markers:", error)
       setMapError("Nie udało się dodać markerów na mapę.")
@@ -147,7 +152,7 @@ export function TennisCourtsMap({ tennisCourts }: TennisCourtsMapProps) {
 
       console.log("Loading Google Maps API script...")
       const script = document.createElement("script")
-      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+      const apiKey = GOOGLE_MAPS_API_KEY
       console.log("API Key being used:", apiKey)
       
       if (!apiKey) {
@@ -156,7 +161,7 @@ export function TennisCourtsMap({ tennisCourts }: TennisCourtsMapProps) {
         return
       }
 
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap`
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initMap`
       script.async = true
       script.defer = true
       script.onerror = (error) => {
