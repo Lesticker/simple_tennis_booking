@@ -1,15 +1,15 @@
-import type React from "react"
+import type { Metadata } from "next"
 import "@/app/globals.css"
 import { Inter } from "next/font/google"
-import { Toaster } from "sonner"
+import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from "@/components/theme-provider"
+import Script from "next/script"
 
 const inter = Inter({ subsets: ["latin"] })
 
-export const metadata = {
-  title: "Tennis Court Booking",
-  description: "Book your tennis court time slot",
-    generator: 'v0.dev'
+export const metadata: Metadata = {
+  title: "Tennis Courts Booking",
+  description: "Book your tennis court online",
 }
 
 export default function RootLayout({
@@ -18,7 +18,14 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <Script id="env-script" strategy="beforeInteractive">
+          {`window.__env__ = ${JSON.stringify({
+            NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+          })}`}
+        </Script>
+      </head>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <main className="min-h-screen bg-background">{children}</main>
