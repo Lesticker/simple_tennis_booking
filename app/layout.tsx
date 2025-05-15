@@ -3,7 +3,6 @@ import "@/app/globals.css"
 import { Inter } from "next/font/google"
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from "@/components/theme-provider"
-import Script from "next/script"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -17,21 +16,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  // Debugowanie - sprawdź wartość zmiennej środowiskowej
-  console.log("Server-side NEXT_PUBLIC_GOOGLE_MAPS_API_KEY:", process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY)
-  
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <Script id="env-script" strategy="beforeInteractive">
-          {`
-            window.__env__ = {
-              NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: "${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}"
-            };
-            console.log("Client-side env loaded:", window.__env__);
-          `}
-        </Script>
-      </head>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <main className="min-h-screen bg-background">{children}</main>
