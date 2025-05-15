@@ -1,9 +1,7 @@
 import { getTennisCourtById } from "@/lib/tennis-courts"
-import { TennisCourtDetails } from "@/components/tennis-court-details"
-import { BookingCalendar } from "@/components/booking-calendar"
-import { BookingForm } from "@/components/booking-form"
 import { getBookingsByCourtId } from "@/lib/bookings"
 import { notFound } from "next/navigation"
+import TennisCourtPageClient from "./client"
 
 interface TennisCourtPageProps {
   params: {
@@ -22,20 +20,9 @@ export default async function TennisCourtPage({ params }: TennisCourtPageProps) 
     }
 
     const bookings = await getBookingsByCourtId(id)
+    console.log("Server-side bookings:", bookings)
 
-    return (
-      <div className="container mx-auto py-8 px-4">
-        <TennisCourtDetails court={court} />
-
-        <div className="mt-8">
-          <h2 className="text-2xl font-bold mb-6">Zarezerwuj ten kort</h2>
-          <div className="grid gap-8 md:grid-cols-[1fr_300px]">
-            <BookingCalendar bookings={bookings} />
-            <BookingForm courtId={court.id} />
-          </div>
-        </div>
-      </div>
-    )
+    return <TennisCourtPageClient court={court} bookings={bookings} />
   } catch (error) {
     console.error('Error loading court page:', error)
     notFound()

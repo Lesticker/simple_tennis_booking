@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache"
 import type { BookingFormData } from "./types"
-import { getBookings, createBooking as createBookingDb } from "./bookings"
+import { getBookings, createBooking as createBookingDb, deleteBooking as deleteBookingDb } from "./bookings"
+import { prisma } from "@/lib/db"
 
 export async function createBooking(data: BookingFormData) {
   try {
@@ -46,23 +47,29 @@ export async function createBooking(data: BookingFormData) {
   }
 }
 
-export async function deleteBooking(bookingId: string) {
+export async function deleteBookingDb(bookingId: string) {
   try {
     console.log("Deleting booking with ID:", bookingId)
-    const success = await deleteBooking(bookingId)
+    
+    // Najpierw sprawdźmy czy rezerwacja istnieje
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId }
+    })
 
-    if (!success) {
-      throw new Error("Failed to delete booking")
+    if (!booking) {
+      console.log("Booking not found, might have been already deleted")
+      return true // Zwracamy true, bo cel (usunięcie rezerwacji) został osiągnięty
     }
 
-    console.log("Booking deleted successfully")
-    revalidatePath("/")
-    return { success: true }
+    await prisma.booking.delete({
+      where: { id: bookingId }
+    })
+    
+    // Dodajemy parametr type do revalidatePath
+    revalidatePath('/courts/[id]', 'page')
+    return true
   } catch (error) {
-    console.error("Error deleting booking:", error)
-    if (error instanceof Error) {
-      return { success: false, error: error.message }
-    }
-    return { success: false, error: "Unknown error occurred" }
+    console.error("Error in deleteBookingDb:", error)
+    return false
   }
 }

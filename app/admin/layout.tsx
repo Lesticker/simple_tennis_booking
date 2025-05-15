@@ -1,7 +1,7 @@
 import type React from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Home, List, Plus, Bug } from "lucide-react"
+import { Home, List, Plus } from "lucide-react"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -33,12 +33,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Button variant="ghost" size="sm">
                 <Plus className="mr-2 h-4 w-4" />
                 Dodaj kort
-              </Button>
-            </Link>
-            <Link href="/admin/debug">
-              <Button variant="ghost" size="sm">
-                <Bug className="mr-2 h-4 w-4" />
-                Debugowanie
               </Button>
             </Link>
           </nav>

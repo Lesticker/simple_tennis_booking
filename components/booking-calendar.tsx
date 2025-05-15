@@ -181,8 +181,17 @@ export function BookingCalendar({ bookings, onSelectEvent }: BookingCalendarProp
                           dayBookings.map((booking) => (
                             <div
                               key={booking.id}
-                              className="bg-primary text-primary-foreground text-xs p-1 rounded cursor-pointer"
-                              onClick={() => onSelectEvent && onSelectEvent(booking)}
+                              className="bg-primary text-primary-foreground text-xs p-1 rounded cursor-pointer hover:bg-primary/90"
+                              onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                console.log("Booking clicked:", booking)
+                                if (onSelectEvent) {
+                                  onSelectEvent(booking)
+                                } else {
+                                  console.log("onSelectEvent is not defined")
+                                }
+                              }}
                             >
                               <div className="font-medium truncate">
                                 {booking.firstName} {booking.lastName}

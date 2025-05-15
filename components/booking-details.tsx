@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { deleteBooking } from "@/lib/actions"
+import { deleteBookingDb } from "@/lib/actions"
 import { toast } from "@/components/ui/use-toast"
 import type { Booking } from "@/lib/types"
 
@@ -33,14 +33,20 @@ export function BookingDetails({ booking, isOpen, onClose, onDelete }: BookingDe
   const handleDelete = async () => {
     try {
       setIsDeleting(true)
-      await deleteBooking(booking.id)
+      const success = await deleteBookingDb(booking.id)
+      
+      if (!success) {
+        throw new Error("Failed to delete booking")
+      }
+      
       toast({
         title: "Rezerwacja anulowana",
         description: "Twoja rezerwacja została pomyślnie anulowana.",
       })
-      onDelete() // Wywołaj funkcję odświeżającą dane
+      onDelete()
       onClose()
     } catch (error) {
+      console.error("Error deleting booking:", error)
       toast({
         title: "Błąd",
         description: "Wystąpił błąd podczas anulowania rezerwacji.",

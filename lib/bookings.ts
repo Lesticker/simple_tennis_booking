@@ -13,11 +13,13 @@ export async function getBookings(): Promise<Booking[]> {
 
 export async function getBookingsByCourtId(courtId: string): Promise<Booking[]> {
   try {
+    console.log("Fetching bookings for court:", courtId)
     const bookings = await prisma.booking.findMany({
       where: {
         courtId: courtId
       }
     })
+    console.log("Found bookings:", bookings)
     return bookings
   } catch (error) {
     console.error('Error fetching bookings by court ID:', error)
@@ -43,7 +45,7 @@ export async function createBooking(data: BookingFormData): Promise<Booking> {
   }
 }
 
-export async function deleteBooking(id: string): Promise<boolean> {
+export async function deleteBookingDb(id: string): Promise<boolean> {
   try {
     await prisma.booking.delete({
       where: {
