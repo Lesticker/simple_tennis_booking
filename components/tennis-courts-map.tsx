@@ -143,7 +143,15 @@ export function TennisCourtsMap({ tennisCourts }: TennisCourtsMapProps) {
 
       console.log("Loading Google Maps API script...")
       const script = document.createElement("script")
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places&callback=initMap`
+      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+      console.log("API Key being used:", apiKey)
+      
+      if (!apiKey) {
+        console.error("Google Maps API key is missing!")
+        return
+      }
+
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap`
       script.async = true
       script.defer = true
       script.onerror = (error) => {
