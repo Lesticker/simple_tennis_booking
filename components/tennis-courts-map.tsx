@@ -24,6 +24,7 @@ export function TennisCourtsMap({ tennisCourts }: TennisCourtsMapProps) {
   const markersRef = useRef<any[]>([])
   const mapInstanceRef = useRef<any>(null)
   const [isScriptLoaded, setIsScriptLoaded] = useState(false)
+  const [mapError, setMapError] = useState<string | null>(null)
 
   const initializeMap = useCallback(() => {
     if (!mapRef.current || !window.google || !window.google.maps) {
@@ -45,9 +46,11 @@ export function TennisCourtsMap({ tennisCourts }: TennisCourtsMapProps) {
       const newMap = new window.google.maps.Map(mapRef.current, mapOptions)
       mapInstanceRef.current = newMap
       setMapLoaded(true)
+      setMapError(null)
       console.log("Map initialized successfully")
     } catch (error) {
       console.error("Error initializing map:", error)
+      setMapError("Nie udało się załadować mapy. Spróbuj odświeżyć stronę.")
     }
   }, [])
 
@@ -115,6 +118,7 @@ export function TennisCourtsMap({ tennisCourts }: TennisCourtsMapProps) {
       }
     } catch (error) {
       console.error("Error adding markers:", error)
+      setMapError("Nie udało się dodać markerów na mapę.")
     }
   }, [tennisCourts])
 
@@ -148,6 +152,7 @@ export function TennisCourtsMap({ tennisCourts }: TennisCourtsMapProps) {
       
       if (!apiKey) {
         console.error("Google Maps API key is missing!")
+        setMapError("Brak klucza API Google Maps. Skontaktuj się z administratorem.")
         return
       }
 
@@ -156,6 +161,7 @@ export function TennisCourtsMap({ tennisCourts }: TennisCourtsMapProps) {
       script.defer = true
       script.onerror = (error) => {
         console.error("Error loading Google Maps API script:", error)
+        setMapError("Nie udało się załadować mapy Google. Spróbuj odświeżyć stronę.")
       }
       document.head.appendChild(script)
     }
@@ -194,7 +200,13 @@ export function TennisCourtsMap({ tennisCourts }: TennisCourtsMapProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="p-4">
-        <div ref={mapRef} className="w-full h-[500px] rounded-md" />
+        {mapError ? (
+          <div className="w-full h-[500px] rounded-md flex items-center justify-center bg-gray-100">
+            <p className="text-red-500">{mapError}</p>
+          </div>
+        ) : (
+          <div ref={mapRef} className="w-full h-[500px] rounded-md" />
+        )}
         <div className="mt-2 text-xs text-muted-foreground">
           {tennisCourts.map((court) => (
             <p key={court.id}>
