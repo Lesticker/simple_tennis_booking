@@ -6,7 +6,7 @@ import {
   addTennisCourt as addTennisCourtData,
   updateTennisCourt as updateTennisCourtData,
 } from "./tennis-courts"
-import { getBookings, saveBookings } from "./bookings"
+import { getBookings, deleteBooking } from "./bookings"
 import type { TennisCourt } from "./types"
 
 export async function deleteTennisCourt(id: string) {
@@ -21,8 +21,12 @@ export async function deleteTennisCourt(id: string) {
 
     // Usuń wszystkie rezerwacje dla tego kortu
     const bookings = await getBookings()
-    const updatedBookings = bookings.filter((booking) => booking.courtId !== id)
-    await saveBookings(updatedBookings)
+    const courtBookings = bookings.filter((booking) => booking.courtId === id)
+    
+    // Usuń każdą rezerwację osobno
+    for (const booking of courtBookings) {
+      await deleteBooking(booking.id)
+    }
 
     revalidatePath("/")
     revalidatePath("/admin/courts")
