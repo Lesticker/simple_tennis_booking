@@ -10,7 +10,6 @@ interface TennisCourtsMapProps {
   tennisCourts: TennisCourt[]
 }
 
-// Declare google as a global variable
 declare global {
   interface Window {
     google: any
@@ -26,7 +25,6 @@ export function TennisCourtsMap({ tennisCourts }: TennisCourtsMapProps) {
   const mapInstanceRef = useRef<any>(null)
   const [isScriptLoaded, setIsScriptLoaded] = useState(false)
 
-  // Inicjalizacja mapy Google
   const initializeMap = useCallback(() => {
     if (!mapRef.current || !window.google || !window.google.maps) {
       console.log("Cannot initialize map: mapRef or google.maps not available")
@@ -53,7 +51,6 @@ export function TennisCourtsMap({ tennisCourts }: TennisCourtsMapProps) {
     }
   }, [])
 
-  // Dodawanie markerów na mapie
   const addMarkers = useCallback(() => {
     if (!mapInstanceRef.current || !window.google || !window.google.maps) {
       console.log("Cannot add markers: map instance or google.maps not available")
@@ -72,11 +69,11 @@ export function TennisCourtsMap({ tennisCourts }: TennisCourtsMapProps) {
       tennisCourts.forEach((court) => {
         console.log(`Adding marker for ${court.name} at lat: ${court.latitude}, lng: ${court.longitude}`)
 
-        // Użyj AdvancedMarkerElement zamiast Marker
-        const marker = new window.google.maps.marker.AdvancedMarkerElement({
+        const marker = new window.google.maps.Marker({
           position: { lat: court.latitude, lng: court.longitude },
           map: mapInstanceRef.current,
           title: court.name,
+          animation: window.google.maps.Animation.DROP,
         })
 
         // Dodaj okno informacyjne po kliknięciu na marker
@@ -121,14 +118,11 @@ export function TennisCourtsMap({ tennisCourts }: TennisCourtsMapProps) {
     }
   }, [tennisCourts])
 
-  // Sprawdzenie, czy Google Maps API jest załadowane
   const checkIfGoogleMapsLoaded = useCallback(() => {
     return window.google && window.google.maps
   }, [])
 
-  // Ładowanie Google Maps API
   useEffect(() => {
-    // Definiujemy funkcję inicjalizacji mapy w globalnym obiekcie window
     window.initMap = () => {
       console.log("Google Maps API loaded via callback")
       setIsScriptLoaded(true)
@@ -152,8 +146,8 @@ export function TennisCourtsMap({ tennisCourts }: TennisCourtsMapProps) {
       script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places&callback=initMap`
       script.async = true
       script.defer = true
-      script.onerror = () => {
-        console.error("Error loading Google Maps API script")
+      script.onerror = (error) => {
+        console.error("Error loading Google Maps API script:", error)
       }
       document.head.appendChild(script)
     }
@@ -169,7 +163,6 @@ export function TennisCourtsMap({ tennisCourts }: TennisCourtsMapProps) {
 
     // Cleanup function
     return () => {
-      // Usuń markery przy odmontowaniu komponentu
       if (markersRef.current && window.google && window.google.maps) {
         markersRef.current.forEach((marker) => marker.setMap(null))
         markersRef.current = []
