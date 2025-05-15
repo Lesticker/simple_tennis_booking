@@ -62,6 +62,8 @@ export function TennisCourtsMap({ tennisCourts }: TennisCourtsMapProps) {
     }
 
     console.log("Adding markers...")
+    console.log("Map instance:", mapInstanceRef.current)
+    console.log("Number of courts:", tennisCourts.length)
 
     try {
       // Usuń istniejące markery
@@ -117,21 +119,21 @@ export function TennisCourtsMap({ tennisCourts }: TennisCourtsMapProps) {
           }, 100)
         }
       }
-
-      console.log("Map instance:", mapInstanceRef.current)
-      console.log("Google Maps object:", window.google.maps)
-      console.log("Number of courts:", tennisCourts.length)
     } catch (error) {
       console.error("Error adding markers:", error)
       setMapError("Nie udało się dodać markerów na mapę.")
     }
   }, [tennisCourts])
 
-  const checkIfGoogleMapsLoaded = useCallback(() => {
-    return window.google && window.google.maps
-  }, [])
-
   useEffect(() => {
+    // Debugowanie - sprawdź wartość klucza API
+    console.log("Current API Key:", GOOGLE_MAPS_API_KEY)
+    
+    if (!GOOGLE_MAPS_API_KEY) {
+      setMapError("Brak klucza API Google Maps. Skontaktuj się z administratorem.")
+      return
+    }
+
     window.initMap = () => {
       console.log("Google Maps API loaded via callback")
       setIsScriptLoaded(true)
@@ -142,7 +144,7 @@ export function TennisCourtsMap({ tennisCourts }: TennisCourtsMapProps) {
       // Sprawdź, czy skrypt już istnieje
       if (document.querySelector('script[src*="maps.googleapis.com/maps/api"]')) {
         console.log("Google Maps script already exists in document")
-        if (checkIfGoogleMapsLoaded()) {
+        if (window.google && window.google.maps) {
           console.log("Google Maps API already loaded")
           setIsScriptLoaded(true)
           initializeMap()
@@ -150,17 +152,8 @@ export function TennisCourtsMap({ tennisCourts }: TennisCourtsMapProps) {
         return
       }
 
-      console.log("Loading Google Maps API script...")
+      console.log("Loading Google Maps API script with key:", GOOGLE_MAPS_API_KEY)
       const script = document.createElement("script")
-      const apiKey = GOOGLE_MAPS_API_KEY
-      console.log("API Key being used:", apiKey)
-      
-      if (!apiKey) {
-        console.error("Google Maps API key is missing!")
-        setMapError("Brak klucza API Google Maps. Skontaktuj się z administratorem.")
-        return
-      }
-
       script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initMap`
       script.async = true
       script.defer = true
@@ -171,14 +164,7 @@ export function TennisCourtsMap({ tennisCourts }: TennisCourtsMapProps) {
       document.head.appendChild(script)
     }
 
-    // Sprawdź, czy API Google Maps jest już załadowane
-    if (checkIfGoogleMapsLoaded()) {
-      console.log("Google Maps API already loaded on mount")
-      setIsScriptLoaded(true)
-      initializeMap()
-    } else {
-      loadGoogleMapsAPI()
-    }
+    loadGoogleMapsAPI()
 
     // Cleanup function
     return () => {
@@ -187,7 +173,7 @@ export function TennisCourtsMap({ tennisCourts }: TennisCourtsMapProps) {
         markersRef.current = []
       }
     }
-  }, [initializeMap, checkIfGoogleMapsLoaded])
+  }, [initializeMap])
 
   // Dodaj markery, gdy mapa jest gotowa i korty są dostępne
   useEffect(() => {
