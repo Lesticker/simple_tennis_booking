@@ -72,11 +72,11 @@ export function TennisCourtsMap({ tennisCourts }: TennisCourtsMapProps) {
       tennisCourts.forEach((court) => {
         console.log(`Adding marker for ${court.name} at lat: ${court.latitude}, lng: ${court.longitude}`)
 
-        const marker = new window.google.maps.Marker({
+        // Użyj AdvancedMarkerElement zamiast Marker
+        const marker = new window.google.maps.marker.AdvancedMarkerElement({
           position: { lat: court.latitude, lng: court.longitude },
           map: mapInstanceRef.current,
           title: court.name,
-          animation: window.google.maps.Animation.DROP,
         })
 
         // Dodaj okno informacyjne po kliknięciu na marker
