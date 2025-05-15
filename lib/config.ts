@@ -2,16 +2,18 @@ const getGoogleMapsApiKey = () => {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 
   if (!apiKey) {
-    // Sprawdź czy jesteśmy w środowisku produkcyjnym
+    // W środowisku produkcyjnym wyświetl błąd tylko w konsoli
     if (process.env.NODE_ENV === 'production') {
-      console.error('NEXT_PUBLIC_GOOGLE_MAPS_API_KEY is not set in production environment')
-    } else {
-      console.warn('NEXT_PUBLIC_GOOGLE_MAPS_API_KEY is not set in development environment')
-      console.info('Please create .env.local file with your Google Maps API key')
+      console.error('Missing NEXT_PUBLIC_GOOGLE_MAPS_API_KEY in environment variables')
+      return '' // Zwróć pusty string zamiast undefined
     }
+    // W środowisku deweloperskim wyświetl instrukcje
+    console.warn('Missing NEXT_PUBLIC_GOOGLE_MAPS_API_KEY in development environment')
+    console.info('Please create .env.local file with your Google Maps API key')
+    return '' // Zwróć pusty string zamiast undefined
   }
 
-  return apiKey || ''
+  return apiKey
 }
 
 export const GOOGLE_MAPS_API_KEY = getGoogleMapsApiKey()

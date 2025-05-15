@@ -2,7 +2,10 @@
   command = "npm run build"
   publish = ".next"
 
-[build.environment]
+[context.production.environment]
+  NEXT_PUBLIC_GOOGLE_MAPS_API_KEY = ""
+
+[context.deploy-preview.environment]
   NEXT_PUBLIC_GOOGLE_MAPS_API_KEY = ""
 
 [[plugins]]
