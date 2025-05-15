@@ -12,25 +12,47 @@ interface TennisCourtPageProps {
 }
 
 export default async function TennisCourtPage({ params }: TennisCourtPageProps) {
-  const court = await getTennisCourtById(params.id)
+  const { id } = await Promise.resolve(params)
+  
+  try {
+    const court = await getTennisCourtById(id)
+    
+    if (!court) {
+      notFound()
+    }
 
-  if (!court) {
-    notFound()
-  }
+    const bookings = await getBookingsByCourtId(id)
 
-  const bookings = await getBookingsByCourtId(params.id)
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <TennisCourtDetails court={court} />
 
-  return (
-    <div className="container mx-auto py-8 px-4">
-      <TennisCourtDetails court={court} />
-
-      <div className="mt-8">
-        <h2 className="text-2xl font-bold mb-6">Zarezerwuj ten kort</h2>
-        <div className="grid gap-8 md:grid-cols-[1fr_300px]">
-          <BookingCalendar bookings={bookings} />
-          <BookingForm courtId={court.id} />
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold mb-6">Zarezerwuj ten kort</h2>
+          <div className="grid gap-8 md:grid-cols-[1fr_300px]">
+            <BookingCalendar bookings={bookings} />
+            <BookingForm courtId={court.id} />
+          </div>
         </div>
       </div>
-    </div>
-  )
+    )
+  } catch (error) {
+    console.error('Error loading court page:', error)
+    notFound()
+  }
+}
+
+export async function generateMetadata({ params }: TennisCourtPageProps) {
+  const { id } = await Promise.resolve(params)
+  
+  try {
+    const court = await getTennisCourtById(id)
+    return {
+      title: court ? `Kort ${court.name}` : 'Kort tenisowy',
+    }
+  } catch {
+    return {
+      title: 'Kort tenisowy',
+    }
+  }
 }

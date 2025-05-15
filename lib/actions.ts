@@ -2,8 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import type { BookingFormData } from "./types"
-import { getBookings, saveBookings } from "./bookings"
-import { v4 as uuidv4 } from "uuid"
+import { getBookings, createBooking as createBookingDb } from "./bookings"
 
 export async function createBooking(data: BookingFormData) {
   try {
@@ -31,15 +30,8 @@ export async function createBooking(data: BookingFormData) {
       throw new Error("Time slot already booked")
     }
 
-    // Create new booking
-    const newBooking = {
-      id: uuidv4(),
-      ...data,
-    }
-
-    // Add to bookings and save
-    bookings.push(newBooking)
-    await saveBookings(bookings)
+    // Create new booking in database
+    const newBooking = await createBookingDb(data)
     console.log("Booking created successfully with ID:", newBooking.id)
 
     revalidatePath("/")
@@ -47,7 +39,6 @@ export async function createBooking(data: BookingFormData) {
     return { success: true }
   } catch (error) {
     console.error("Error creating booking:", error)
-    // Zwróć bardziej szczegółowy komunikat błędu
     if (error instanceof Error) {
       return { success: false, error: error.message }
     }
@@ -58,24 +49,17 @@ export async function createBooking(data: BookingFormData) {
 export async function deleteBooking(bookingId: string) {
   try {
     console.log("Deleting booking with ID:", bookingId)
-    const bookings = await getBookings()
-    const booking = bookings.find((b) => b.id === bookingId)
+    const success = await deleteBooking(bookingId)
 
-    if (!booking) {
-      console.log("Booking not found with ID:", bookingId)
-      throw new Error("Booking not found")
+    if (!success) {
+      throw new Error("Failed to delete booking")
     }
 
-    const updatedBookings = bookings.filter((booking) => booking.id !== bookingId)
-
-    await saveBookings(updatedBookings)
     console.log("Booking deleted successfully")
     revalidatePath("/")
-    revalidatePath(`/courts/${booking.courtId}`)
     return { success: true }
   } catch (error) {
     console.error("Error deleting booking:", error)
-    // Zwróć bardziej szczegółowy komunikat błędu
     if (error instanceof Error) {
       return { success: false, error: error.message }
     }

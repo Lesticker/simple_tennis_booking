@@ -1,49 +1,58 @@
-import fs from "fs/promises"
-import path from "path"
-import type { Booking } from "./types"
-import { getDataDirectory } from "./data-directory"
-
-// Pobierz ścieżkę do katalogu danych
-const getBookingsFilePath = async () => {
-  const dataDir = await getDataDirectory()
-  return path.join(dataDir, "bookings.json")
-}
+import { prisma } from './db'
+import type { Booking, BookingFormData } from './types'
 
 export async function getBookings(): Promise<Booking[]> {
   try {
-    const bookingsFilePath = await getBookingsFilePath()
-    console.log("Reading bookings from:", bookingsFilePath)
-
-    try {
-      const data = await fs.readFile(bookingsFilePath, "utf8")
-      const bookings = JSON.parse(data)
-      console.log(`Found ${bookings.length} bookings`)
-      return bookings
-    } catch (error) {
-      console.log("Bookings file not found or invalid, creating empty bookings array")
-      // If file doesn't exist or is invalid, return empty array
-      await saveBookings([])
-      return []
-    }
+    const bookings = await prisma.booking.findMany()
+    return bookings
   } catch (error) {
-    console.error("Error reading bookings:", error)
+    console.error('Error fetching bookings:', error)
     return []
   }
 }
 
 export async function getBookingsByCourtId(courtId: string): Promise<Booking[]> {
-  const bookings = await getBookings()
-  return bookings.filter((booking) => booking.courtId === courtId)
+  try {
+    const bookings = await prisma.booking.findMany({
+      where: {
+        courtId: courtId
+      }
+    })
+    return bookings
+  } catch (error) {
+    console.error('Error fetching bookings by court ID:', error)
+    return []
+  }
 }
 
-export async function saveBookings(bookings: Booking[]): Promise<void> {
+export async function createBooking(data: BookingFormData): Promise<Booking> {
   try {
-    const bookingsFilePath = await getBookingsFilePath()
-    console.log(`Saving ${bookings.length} bookings to:`, bookingsFilePath)
-    await fs.writeFile(bookingsFilePath, JSON.stringify(bookings, null, 2), "utf8")
-    console.log("Bookings saved successfully")
+    const booking = await prisma.booking.create({
+      data: {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        startTime: new Date(data.startTime),
+        endTime: new Date(data.endTime),
+        courtId: data.courtId
+      }
+    })
+    return booking
   } catch (error) {
-    console.error("Error saving bookings:", error)
+    console.error('Error creating booking:', error)
     throw error
+  }
+}
+
+export async function deleteBooking(id: string): Promise<boolean> {
+  try {
+    await prisma.booking.delete({
+      where: {
+        id: id
+      }
+    })
+    return true
+  } catch (error) {
+    console.error('Error deleting booking:', error)
+    return false
   }
 }
