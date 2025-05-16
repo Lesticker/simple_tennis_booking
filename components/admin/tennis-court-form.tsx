@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { toast } from "@/components/ui/use-toast"
 import { addTennisCourt, updateTennisCourt } from "@/lib/admin-actions"
 import type { TennisCourt } from "@/lib/types"
+import { ImageUpload } from "@/components/ui/image-upload"
 
 interface TennisCourtFormProps {
   court?: TennisCourt
@@ -205,12 +206,10 @@ export function TennisCourtForm({ court }: TennisCourtFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="imageUrl">URL zdjęcia</Label>
-              <Input
-                id="imageUrl"
+              <ImageUpload
                 value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="np. /images/court-slowik.png"
+                onChange={setImageUrl}
+                label="Zdjęcie kortu"
               />
             </div>
 
