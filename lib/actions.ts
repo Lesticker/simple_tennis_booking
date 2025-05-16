@@ -2,12 +2,22 @@
 
 import { revalidatePath } from "next/cache"
 import type { BookingFormData } from "./types"
-import { getBookings, createBooking as createBookingDb, deleteBooking as deleteBookingDb } from "./bookings"
-import { prisma } from "@/lib/db"
+import { getBookings, createBooking as createBookingDb } from "./bookings"
+import { db } from "@/lib/db"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
 export async function createBooking(data: BookingFormData) {
   try {
     console.log("Creating booking:", data)
+
+    // Check authentication
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      console.error("User not authenticated")
+      return { success: false, error: "User not authenticated" }
+    }
+
     const bookings = await getBookings()
 
     // Check if the time slot is already booked for this court
@@ -52,7 +62,7 @@ export async function deleteBookingDb(bookingId: string) {
     console.log("Deleting booking with ID:", bookingId)
     
     // Najpierw sprawdźmy czy rezerwacja istnieje
-    const booking = await prisma.booking.findUnique({
+    const booking = await db.booking.findUnique({
       where: { id: bookingId }
     })
 
@@ -61,7 +71,7 @@ export async function deleteBookingDb(bookingId: string) {
       return true // Zwracamy true, bo cel (usunięcie rezerwacji) został osiągnięty
     }
 
-    await prisma.booking.delete({
+    await db.booking.delete({
       where: { id: bookingId }
     })
     

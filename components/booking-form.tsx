@@ -7,12 +7,12 @@ import { useRouter } from "next/navigation"
 import { CalendarIcon } from "lucide-react"
 import { format } from "date-fns"
 import { pl } from "date-fns/locale"
+import { useSession } from "next-auth/react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -32,18 +32,15 @@ interface BookingFormProps {
 
 export function BookingForm({ onSuccess, courtId }: BookingFormProps) {
   const router = useRouter()
+  const { data: session } = useSession()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Form state
-  const [firstName, setFirstName] = useState("")
-  const [lastName, setLastName] = useState("")
   const [date, setDate] = useState<Date | undefined>(undefined)
   const [time, setTime] = useState<string | undefined>(undefined)
 
   // Form validation
   const [errors, setErrors] = useState<{
-    firstName?: string
-    lastName?: string
     date?: string
     time?: string
   }>({})
@@ -51,21 +48,21 @@ export function BookingForm({ onSuccess, courtId }: BookingFormProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
+    if (!session) {
+      toast({
+        title: "Wymagane logowanie",
+        description: "Musisz być zalogowany, aby dokonać rezerwacji.",
+        variant: "destructive",
+      })
+      router.push("/login")
+      return
+    }
+
     // Validate form
     const newErrors: {
-      firstName?: string
-      lastName?: string
       date?: string
       time?: string
     } = {}
-
-    if (!firstName || firstName.length < 2) {
-      newErrors.firstName = "Imię musi mieć co najmniej 2 znaki."
-    }
-
-    if (!lastName || lastName.length < 2) {
-      newErrors.lastName = "Nazwisko musi mieć co najmniej 2 znaki."
-    }
 
     if (!date) {
       newErrors.date = "Proszę wybrać datę."
@@ -92,8 +89,8 @@ export function BookingForm({ onSuccess, courtId }: BookingFormProps) {
       endTime.setHours(endTime.getHours() + 1)
 
       const result = await createBooking({
-        firstName,
-        lastName,
+        firstName: session.user?.name || "",
+        lastName: session.user?.surname || "",
         startTime: startTime.toISOString(),
         endTime: endTime.toISOString(),
         courtId,
@@ -108,8 +105,6 @@ export function BookingForm({ onSuccess, courtId }: BookingFormProps) {
         })
 
         // Reset form
-        setFirstName("")
-        setLastName("")
         setDate(undefined)
         setTime(undefined)
 
@@ -143,27 +138,20 @@ export function BookingForm({ onSuccess, courtId }: BookingFormProps) {
     <Card>
       <CardHeader>
         <CardTitle>Zarezerwuj kort</CardTitle>
-        <CardDescription>Wybierz datę i godzinę, aby zarezerwować kort tenisowy.</CardDescription>
+        <CardDescription>
+          {session?.user ? (
+            <>
+              Rezerwujesz jako: <span className="font-medium">{session.user.name} {session.user.surname}</span>
+              <br />
+              Wybierz datę i godzinę, aby zarezerwować kort tenisowy.
+            </>
+          ) : (
+            "Zaloguj się, aby zarezerwować kort tenisowy."
+          )}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="firstName">Imię</Label>
-            <Input id="firstName" placeholder="Jan" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
-            {errors.firstName && <p className="text-sm text-red-500">{errors.firstName}</p>}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="lastName">Nazwisko</Label>
-            <Input
-              id="lastName"
-              placeholder="Kowalski"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-            />
-            {errors.lastName && <p className="text-sm text-red-500">{errors.lastName}</p>}
-          </div>
-
           <div className="space-y-2">
             <Label htmlFor="date">Data</Label>
             <Popover>
@@ -209,7 +197,7 @@ export function BookingForm({ onSuccess, courtId }: BookingFormProps) {
             {errors.time && <p className="text-sm text-red-500">{errors.time}</p>}
           </div>
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
+          <Button type="submit" className="w-full" disabled={isSubmitting || !session}>
             {isSubmitting ? "Rezerwowanie..." : "Zarezerwuj kort"}
           </Button>
         </form>

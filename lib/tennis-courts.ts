@@ -1,18 +1,13 @@
-import { prisma } from './db'
-import type { TennisCourt } from './types'
+import { db } from "./db"
+import { TennisCourt, Prisma } from "@prisma/client"
 
 export async function getTennisCourts(): Promise<TennisCourt[]> {
   try {
-    const courts = await prisma.tennisCourt.findMany()
+    const courts = await db.tennisCourt.findMany()
     return courts.map(court => ({
       ...court,
       features: court.features as string[],
-      openingHours: court.openingHours as {
-        [key: string]: {
-          open: string
-          close: string
-        }
-      }
+      openingHours: court.openingHours as Prisma.JsonObject,
     }))
   } catch (error) {
     console.error("Error reading tennis courts:", error)
@@ -22,7 +17,7 @@ export async function getTennisCourts(): Promise<TennisCourt[]> {
 
 export async function getTennisCourtById(id: string): Promise<TennisCourt | null> {
   try {
-    const court = await prisma.tennisCourt.findUnique({
+    const court = await db.tennisCourt.findUnique({
       where: { id }
     })
     
@@ -31,12 +26,7 @@ export async function getTennisCourtById(id: string): Promise<TennisCourt | null
     return {
       ...court,
       features: court.features as string[],
-      openingHours: court.openingHours as {
-        [key: string]: {
-          open: string
-          close: string
-        }
-      }
+      openingHours: court.openingHours as Prisma.JsonObject,
     }
   } catch (error) {
     console.error("Error reading tennis court:", error)
@@ -44,9 +34,9 @@ export async function getTennisCourtById(id: string): Promise<TennisCourt | null
   }
 }
 
-export async function addTennisCourt(court: Omit<TennisCourt, "id">): Promise<TennisCourt> {
+export async function addTennisCourt(court: Omit<TennisCourt, "id" | "createdAt" | "updatedAt">): Promise<TennisCourt> {
   try {
-    const newCourt = await prisma.tennisCourt.create({
+    const newCourt = await db.tennisCourt.create({
       data: {
         name: court.name,
         address: court.address,
@@ -55,43 +45,28 @@ export async function addTennisCourt(court: Omit<TennisCourt, "id">): Promise<Te
         latitude: court.latitude,
         longitude: court.longitude,
         features: court.features,
-        openingHours: court.openingHours
+        openingHours: court.openingHours as Prisma.JsonObject,
       }
     })
 
-    return {
-      ...newCourt,
-      features: newCourt.features as string[],
-      openingHours: newCourt.openingHours as {
-        [key: string]: {
-          open: string
-          close: string
-        }
-      }
-    }
+    return newCourt
   } catch (error) {
-    console.error("Error adding tennis court:", error)
+    console.error("Error creating tennis court:", error)
     throw error
   }
 }
 
-export async function updateTennisCourt(id: string, courtData: Partial<TennisCourt>): Promise<TennisCourt | null> {
+export async function updateTennisCourt(id: string, courtData: Partial<Omit<TennisCourt, "id" | "createdAt" | "updatedAt">>): Promise<TennisCourt | null> {
   try {
-    const updatedCourt = await prisma.tennisCourt.update({
+    const updatedCourt = await db.tennisCourt.update({
       where: { id },
-      data: courtData
+      data: {
+        ...courtData,
+        openingHours: courtData.openingHours as Prisma.JsonObject,
+      }
     })
 
-    return {
-      ...updatedCourt,
-      features: updatedCourt.features as string[],
-      openingHours: updatedCourt.openingHours as {
-        [key: string]: {
-          open: string
-          close: string
-        }
-      }
-    }
+    return updatedCourt
   } catch (error) {
     console.error("Error updating tennis court:", error)
     return null
@@ -100,7 +75,7 @@ export async function updateTennisCourt(id: string, courtData: Partial<TennisCou
 
 export async function deleteTennisCourt(id: string): Promise<boolean> {
   try {
-    await prisma.tennisCourt.delete({
+    await db.tennisCourt.delete({
       where: { id }
     })
     return true
