@@ -9,7 +9,7 @@ export interface BookingFormData {
   startTime: string
   endTime: string
   courtId: string
-  userId: string
+  userId?: string
 }
 
 // Re-export Prisma types with date fields as strings for frontend use

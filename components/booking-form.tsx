@@ -5,7 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { CalendarIcon } from "lucide-react"
-import { format } from "date-fns"
+import { format, startOfDay } from "date-fns"
 import { pl } from "date-fns/locale"
 import { useSession } from "next-auth/react"
 
@@ -88,6 +88,7 @@ export function BookingForm({ onSuccess, courtId }: BookingFormProps) {
       const endTime = new Date(startTime)
       endTime.setHours(endTime.getHours() + 1)
 
+      // userId is added server-side in the action
       const result = await createBooking({
         firstName: session.user?.name || "",
         lastName: session.user?.surname || "",
@@ -170,7 +171,10 @@ export function BookingForm({ onSuccess, courtId }: BookingFormProps) {
                   mode="single"
                   selected={date}
                   onSelect={setDate}
-                  disabled={(date) => date < new Date()}
+                  disabled={(date) => {
+                    const today = startOfDay(new Date())
+                    return date < today
+                  }}
                   initialFocus
                   locale={pl}
                 />

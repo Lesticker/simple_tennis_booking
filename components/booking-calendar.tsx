@@ -83,10 +83,16 @@ const groupDaysIntoWeeks = (days: any[]) => {
 
 // Funkcja pomocnicza do filtrowania rezerwacji dla danego dnia
 const getBookingsForDay = (bookings: Booking[], date: Date) => {
-  return bookings.filter((booking) => {
-    const bookingDate = new Date(booking.startTime)
-    return isSameDay(bookingDate, date)
-  })
+  return bookings
+    .filter((booking) => {
+      const bookingDate = new Date(booking.startTime)
+      return isSameDay(bookingDate, date)
+    })
+    .sort((a, b) => {
+      const timeA = new Date(a.startTime).getTime();
+      const timeB = new Date(b.startTime).getTime();
+      return timeA - timeB;
+    });
 }
 
 export function BookingCalendar({ bookings, onSelectEvent }: BookingCalendarProps) {

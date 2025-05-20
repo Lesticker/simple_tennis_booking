@@ -5,7 +5,11 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 
 export async function getBookings(): Promise<Booking[]> {
   try {
-    const bookings = await db.booking.findMany()
+    const bookings = await db.booking.findMany({
+      orderBy: {
+        startTime: 'asc'
+      }
+    })
     return bookings.map(booking => ({
       ...booking,
       startTime: booking.startTime.toISOString(),
@@ -25,6 +29,9 @@ export async function getBookingsByCourtId(courtId: string): Promise<Booking[]> 
     const bookings = await db.booking.findMany({
       where: {
         courtId: courtId
+      },
+      orderBy: {
+        startTime: 'asc'
       }
     })
     console.log("Found bookings:", bookings)
