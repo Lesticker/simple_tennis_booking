@@ -36,7 +36,13 @@ export function BookingDetails({ booking, isOpen, onClose, onDelete }: BookingDe
       const success = await deleteBookingDb(booking.id)
       
       if (!success) {
-        throw new Error("Failed to delete booking")
+        toast({
+          title: "Błąd podczas anulowania",
+          description: "Nie możesz anulować tej rezerwacji. Tylko właściciel rezerwacji lub administrator może ją anulować.",
+          variant: "destructive",
+        })
+        setIsDeleting(false)
+        return
       }
       
       toast({

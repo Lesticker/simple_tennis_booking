@@ -1,10 +1,12 @@
 import { TennisCourtsMap } from "@/components/tennis-courts-map"
 import { TennisCourtsList } from "@/components/tennis-courts-list"
-import { getTennisCourts } from "@/lib/tennis-courts"
+import { getApprovedTennisCourts } from "@/lib/tennis-courts-direct"
 import { Suspense } from "react"
+import type { RawTennisCourt } from "@/lib/types"
 
 export default async function Home() {
-  const tennisCourts = await getTennisCourts()
+  const result = await getApprovedTennisCourts()
+  const tennisCourts: RawTennisCourt[] = result.success ? result.courts : []
 
   return (
     <div className="container mx-auto py-8 px-4">

@@ -4,11 +4,11 @@ import { useState, useEffect, useRef, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MapIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
-import type { TennisCourt } from "@/lib/types"
+import type { RawTennisCourt } from "@/lib/types"
 import { GOOGLE_MAPS_API_KEY } from "@/lib/config"
 
 interface TennisCourtsMapProps {
-  tennisCourts: TennisCourt[]
+  tennisCourts: RawTennisCourt[]
 }
 
 declare global {

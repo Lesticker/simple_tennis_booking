@@ -1,7 +1,7 @@
 import type React from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Home, List, Plus } from "lucide-react"
+import { Home, List, Plus, Clock } from "lucide-react"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -22,24 +22,32 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       <div className="bg-muted py-2">
         <div className="container mx-auto px-4">
-          <nav className="flex space-x-4">
+          <div className="flex space-x-4">
             <Link href="/admin/courts">
               <Button variant="ghost" size="sm">
                 <List className="mr-2 h-4 w-4" />
                 Lista kortów
               </Button>
             </Link>
-            <Link href="/admin/courts/new">
+            <Link href="/admin/courts/add">
               <Button variant="ghost" size="sm">
                 <Plus className="mr-2 h-4 w-4" />
                 Dodaj kort
               </Button>
             </Link>
-          </nav>
+            <Link href="/admin/pending-courts">
+              <Button variant="ghost" size="sm">
+                <Clock className="mr-2 h-4 w-4" />
+                Korty do akceptacji
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
-      {children}
+      <div className="container mx-auto px-4 py-8">
+        {children}
+      </div>
     </div>
   )
 }

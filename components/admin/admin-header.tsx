@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { PlusCircle, Home } from "lucide-react"
+import { Home, PlusCircle } from "lucide-react"
 
 interface AdminHeaderProps {
   title: string
@@ -16,6 +16,11 @@ export function AdminHeader({ title }: AdminHeaderProps) {
             <Button variant="outline" size="sm">
               <Home className="mr-2 h-4 w-4" />
               Strona główna
+            </Button>
+          </Link>
+          <Link href="/admin/pending-courts">
+            <Button variant="outline" size="sm">
+              Korty do akceptacji
             </Button>
           </Link>
           <Link href="/admin/courts/new">

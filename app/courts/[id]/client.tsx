@@ -7,9 +7,10 @@ import { BookingDetails } from "@/components/booking-details"
 import { useState } from "react"
 import { Booking } from "@prisma/client"
 import { deleteBookingDb } from "@/lib/actions"
+import { RawTennisCourt } from "@/lib/types"
 
 interface TennisCourtPageClientProps {
-  court: any
+  court: RawTennisCourt
   bookings: Booking[]
 }
 

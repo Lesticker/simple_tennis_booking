@@ -9,7 +9,9 @@ export async function getBookings(): Promise<Booking[]> {
     return bookings.map(booking => ({
       ...booking,
       startTime: booking.startTime.toISOString(),
-      endTime: booking.endTime.toISOString()
+      endTime: booking.endTime.toISOString(),
+      createdAt: booking.createdAt.toISOString(),
+      updatedAt: booking.updatedAt.toISOString()
     }))
   } catch (error) {
     console.error('Error fetching bookings:', error)
@@ -29,7 +31,9 @@ export async function getBookingsByCourtId(courtId: string): Promise<Booking[]> 
     return bookings.map(booking => ({
       ...booking,
       startTime: booking.startTime.toISOString(),
-      endTime: booking.endTime.toISOString()
+      endTime: booking.endTime.toISOString(),
+      createdAt: booking.createdAt.toISOString(),
+      updatedAt: booking.updatedAt.toISOString()
     }))
   } catch (error) {
     console.error('Error fetching bookings by court ID:', error)
@@ -41,17 +45,20 @@ export async function createBooking(data: BookingFormData): Promise<Booking> {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session) {
-      console.error("No session found")
+    if (!session && !data.userId) {
+      console.error("No session found and no userId provided")
       throw new Error('User not authenticated')
     }
 
-    if (!session.user?.id) {
-      console.error("No user ID in session:", session)
-      throw new Error('User ID not found in session')
+    // Użyj userId z parametru, jeśli zostało przekazane, w przeciwnym razie użyj ID z sesji
+    const userId = data.userId || (session?.user as any)?.id
+    
+    if (!userId) {
+      console.error("No user ID available:", session)
+      throw new Error('User ID not found')
     }
 
-    console.log("Session in createBooking:", session)
+    console.log("Creating booking with userId:", userId)
 
     const booking = await db.booking.create({
       data: {
@@ -60,14 +67,16 @@ export async function createBooking(data: BookingFormData): Promise<Booking> {
         startTime: new Date(data.startTime),
         endTime: new Date(data.endTime),
         courtId: data.courtId,
-        userId: session.user.id
+        userId: userId
       }
     })
 
     return {
       ...booking,
       startTime: booking.startTime.toISOString(),
-      endTime: booking.endTime.toISOString()
+      endTime: booking.endTime.toISOString(),
+      createdAt: booking.createdAt.toISOString(),
+      updatedAt: booking.updatedAt.toISOString()
     }
   } catch (error) {
     console.error('Error creating booking:', error)

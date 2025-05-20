@@ -3,10 +3,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { MapPin, Clock, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import type { TennisCourt } from "@/lib/types"
+import type { RawTennisCourt } from "@/lib/types"
 
 interface TennisCourtDetailsProps {
-  court: TennisCourt
+  court: RawTennisCourt
 }
 
 export function TennisCourtDetails({ court }: TennisCourtDetailsProps) {
@@ -20,6 +20,14 @@ export function TennisCourtDetails({ court }: TennisCourtDetailsProps) {
     saturday: "Sobota",
     sunday: "Niedziela",
   }
+
+  // Zapewnij, że features jest tablicą
+  const features = Array.isArray(court.features) ? court.features : [];
+  
+  // Zapewnij, że openingHours jest obiektem
+  const openingHours = typeof court.openingHours === 'string' 
+    ? JSON.parse(court.openingHours) 
+    : court.openingHours;
 
   return (
     <div>
@@ -57,7 +65,7 @@ export function TennisCourtDetails({ court }: TennisCourtDetailsProps) {
 
             <h2 className="text-xl font-semibold">Udogodnienia</h2>
             <div className="flex flex-wrap gap-2">
-              {court.features.map((feature, index) => (
+              {features.map((feature, index) => (
                 <span key={index} className="bg-primary/10 text-primary px-3 py-1 rounded-full">
                   {feature}
                 </span>
@@ -74,11 +82,13 @@ export function TennisCourtDetails({ court }: TennisCourtDetailsProps) {
                 Godziny otwarcia
               </h2>
               <div className="space-y-2">
-                {Object.entries(court.openingHours).map(([day, hours]) => (
+                {Object.entries(openingHours).map(([day, hours]) => (
                   <div key={day} className="flex justify-between">
                     <span className="font-medium">{daysTranslation[day]}</span>
                     <span>
-                      {hours.open} - {hours.close}
+                      {typeof hours === 'object' && hours !== null && 'open' in hours && 'close' in hours
+                        ? `${hours.open} - ${hours.close}`
+                        : 'Godziny niedostępne'}
                     </span>
                   </div>
                 ))}

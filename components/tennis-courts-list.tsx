@@ -4,10 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ListIcon } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import type { TennisCourt } from "@/lib/types"
+import type { RawTennisCourt } from "@/lib/types"
 
 interface TennisCourtsListProps {
-  tennisCourts: TennisCourt[]
+  tennisCourts: RawTennisCourt[]
 }
 
 export function TennisCourtsList({ tennisCourts }: TennisCourtsListProps) {
@@ -40,7 +40,7 @@ export function TennisCourtsList({ tennisCourts }: TennisCourtsListProps) {
                     <h3 className="font-semibold text-lg mb-1">{court.name}</h3>
                     <p className="text-muted-foreground text-sm mb-2">{court.address}</p>
                     <div className="flex flex-wrap gap-2">
-                      {court.features.map((feature, index) => (
+                      {Array.isArray(court.features) && court.features.map((feature, index) => (
                         <span key={index} className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full">
                           {feature}
                         </span>

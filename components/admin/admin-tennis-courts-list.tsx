@@ -19,18 +19,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import type { TennisCourt } from "@/lib/types"
+import type { RawTennisCourt } from "@/lib/types"
 
 interface AdminTennisCourtsListProps {
-  tennisCourts: TennisCourt[]
+  tennisCourts: RawTennisCourt[]
 }
 
 export function AdminTennisCourtsList({ tennisCourts }: AdminTennisCourtsListProps) {
   const router = useRouter()
   const [isDeleting, setIsDeleting] = useState(false)
-  const [courtToDelete, setCourtToDelete] = useState<TennisCourt | null>(null)
+  const [courtToDelete, setCourtToDelete] = useState<RawTennisCourt | null>(null)
 
-  const handleDeleteClick = (court: TennisCourt) => {
+  const handleDeleteClick = (court: RawTennisCourt) => {
     setCourtToDelete(court)
   }
 
@@ -61,10 +61,30 @@ export function AdminTennisCourtsList({ tennisCourts }: AdminTennisCourtsListPro
     setCourtToDelete(null)
   }
 
+  // Funkcja do formatowania statusu kortu
+  const getStatusBadge = (status: string) => {
+    const statusMap: Record<string, { label: string, className: string }> = {
+      'PENDING': { label: 'Oczekujący', className: 'bg-yellow-100 text-yellow-800' },
+      'APPROVED': { label: 'Zatwierdzony', className: 'bg-green-100 text-green-800' },
+      'REJECTED': { label: 'Odrzucony', className: 'bg-red-100 text-red-800' }
+    };
+    
+    const statusInfo = statusMap[status] || { label: status, className: 'bg-gray-100 text-gray-800' };
+    
+    return (
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.className}`}>
+        {statusInfo.label}
+      </span>
+    );
+  };
+
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Lista kortów tenisowych</CardTitle>
+        <Link href="/admin/courts/new">
+          <Button>Dodaj nowy kort</Button>
+        </Link>
       </CardHeader>
       <CardContent>
         {tennisCourts.length === 0 ? (
@@ -82,6 +102,7 @@ export function AdminTennisCourtsList({ tennisCourts }: AdminTennisCourtsListPro
                   <th className="text-left py-3 px-4">Zdjęcie</th>
                   <th className="text-left py-3 px-4">Nazwa</th>
                   <th className="text-left py-3 px-4">Adres</th>
+                  <th className="text-left py-3 px-4">Status</th>
                   <th className="text-left py-3 px-4">Akcje</th>
                 </tr>
               </thead>
@@ -101,6 +122,7 @@ export function AdminTennisCourtsList({ tennisCourts }: AdminTennisCourtsListPro
                     </td>
                     <td className="py-3 px-4 font-medium">{court.name}</td>
                     <td className="py-3 px-4 text-muted-foreground">{court.address}</td>
+                    <td className="py-3 px-4">{getStatusBadge(court.status)}</td>
                     <td className="py-3 px-4">
                       <div className="flex space-x-2">
                         <Link href={`/courts/${court.id}`}>

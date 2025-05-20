@@ -1,14 +1,20 @@
-import { db } from "./db"
-import { TennisCourt, Prisma } from "@prisma/client"
+import type { TennisCourt } from "@prisma/client"
 
-export async function getTennisCourts(): Promise<TennisCourt[]> {
+interface GetTennisCourtsOptions {
+  includeAll?: boolean
+}
+
+export async function getTennisCourts(options: GetTennisCourtsOptions = {}): Promise<TennisCourt[]> {
   try {
-    const courts = await db.tennisCourt.findMany()
-    return courts.map(court => ({
-      ...court,
-      features: court.features as string[],
-      openingHours: court.openingHours as Prisma.JsonObject,
-    }))
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_APP_URL}/api/courts${options.includeAll ? "?includeAll=true" : ""}`,
+      { cache: "no-store" }
+    )
+    if (!response.ok) {
+      throw new Error("Failed to fetch courts")
+    }
+    const data = await response.json()
+    return data.courts
   } catch (error) {
     console.error("Error reading tennis courts:", error)
     return []
@@ -17,17 +23,14 @@ export async function getTennisCourts(): Promise<TennisCourt[]> {
 
 export async function getTennisCourtById(id: string): Promise<TennisCourt | null> {
   try {
-    const court = await db.tennisCourt.findUnique({
-      where: { id }
+    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/courts/${id}`, {
+      cache: "no-store"
     })
-    
-    if (!court) return null
-
-    return {
-      ...court,
-      features: court.features as string[],
-      openingHours: court.openingHours as Prisma.JsonObject,
+    if (!response.ok) {
+      return null
     }
+    const data = await response.json()
+    return data.court
   } catch (error) {
     console.error("Error reading tennis court:", error)
     return null
@@ -36,20 +39,18 @@ export async function getTennisCourtById(id: string): Promise<TennisCourt | null
 
 export async function addTennisCourt(court: Omit<TennisCourt, "id" | "createdAt" | "updatedAt">): Promise<TennisCourt> {
   try {
-    const newCourt = await db.tennisCourt.create({
-      data: {
-        name: court.name,
-        address: court.address,
-        description: court.description,
-        imageUrl: court.imageUrl,
-        latitude: court.latitude,
-        longitude: court.longitude,
-        features: court.features,
-        openingHours: court.openingHours as Prisma.JsonObject,
-      }
+    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/courts`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(court),
     })
-
-    return newCourt
+    if (!response.ok) {
+      throw new Error("Failed to add court")
+    }
+    const data = await response.json()
+    return data.court
   } catch (error) {
     console.error("Error creating tennis court:", error)
     throw error
@@ -58,15 +59,18 @@ export async function addTennisCourt(court: Omit<TennisCourt, "id" | "createdAt"
 
 export async function updateTennisCourt(id: string, courtData: Partial<Omit<TennisCourt, "id" | "createdAt" | "updatedAt">>): Promise<TennisCourt | null> {
   try {
-    const updatedCourt = await db.tennisCourt.update({
-      where: { id },
-      data: {
-        ...courtData,
-        openingHours: courtData.openingHours as Prisma.JsonObject,
-      }
+    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/courts/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(courtData),
     })
-
-    return updatedCourt
+    if (!response.ok) {
+      return null
+    }
+    const data = await response.json()
+    return data.court
   } catch (error) {
     console.error("Error updating tennis court:", error)
     return null
@@ -75,10 +79,10 @@ export async function updateTennisCourt(id: string, courtData: Partial<Omit<Tenn
 
 export async function deleteTennisCourt(id: string): Promise<boolean> {
   try {
-    await db.tennisCourt.delete({
-      where: { id }
+    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/courts/${id}`, {
+      method: "DELETE",
     })
-    return true
+    return response.ok
   } catch (error) {
     console.error("Error deleting tennis court:", error)
     return false

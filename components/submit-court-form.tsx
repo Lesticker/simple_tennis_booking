@@ -1,49 +1,33 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useSession } from "next-auth/react"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "@/components/ui/use-toast"
-import { addTennisCourt, updateTennisCourt } from "@/lib/admin-actions"
-import type { RawTennisCourt } from "@/lib/types"
 import { ImageUpload } from "@/components/ui/image-upload"
+import { submitTennisCourt } from "@/lib/actions"
 
-interface TennisCourtFormProps {
-  court?: RawTennisCourt
-}
-
-export function TennisCourtForm({ court }: TennisCourtFormProps) {
+export function SubmitCourtForm() {
   const router = useRouter()
+  const { data: session } = useSession()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Process court features to ensure it's an array
-  const courtFeatures = court && court.features 
-    ? (Array.isArray(court.features) ? court.features : []) 
-    : [];
-
-  // Process court opening hours to ensure it's an object
-  const courtOpeningHours = court && court.openingHours
-    ? (typeof court.openingHours === 'string' 
-        ? JSON.parse(court.openingHours) 
-        : court.openingHours)
-    : {};
-
   // Form state
-  const [name, setName] = useState(court?.name || "")
-  const [address, setAddress] = useState(court?.address || "")
-  const [description, setDescription] = useState(court?.description || "")
-  const [imageUrl, setImageUrl] = useState(court?.imageUrl || "/images/court-slowik.png")
-  const [latitude, setLatitude] = useState(court?.latitude?.toString() || "")
-  const [longitude, setLongitude] = useState(court?.longitude?.toString() || "")
-  const [features, setFeatures] = useState(courtFeatures.join(", ") || "")
+  const [name, setName] = useState("")
+  const [address, setAddress] = useState("")
+  const [description, setDescription] = useState("")
+  const [imageUrl, setImageUrl] = useState("/images/court-default.png")
+  const [latitude, setLatitude] = useState("")
+  const [longitude, setLongitude] = useState("")
+  const [features, setFeatures] = useState("")
 
-  // Godziny otwarcia
+  // Default opening hours
   const defaultHours = {
     open: "08:00",
     close: "20:00",
@@ -55,13 +39,13 @@ export function TennisCourtForm({ court }: TennisCourtFormProps) {
   }
 
   const [openingHours, setOpeningHours] = useState({
-    monday: courtOpeningHours.monday || defaultHours,
-    tuesday: courtOpeningHours.tuesday || defaultHours,
-    wednesday: courtOpeningHours.wednesday || defaultHours,
-    thursday: courtOpeningHours.thursday || defaultHours,
-    friday: courtOpeningHours.friday || defaultHours,
-    saturday: courtOpeningHours.saturday || defaultWeekendHours,
-    sunday: courtOpeningHours.sunday || defaultWeekendHours,
+    monday: defaultHours,
+    tuesday: defaultHours,
+    wednesday: defaultHours,
+    thursday: defaultHours,
+    friday: defaultHours,
+    saturday: defaultWeekendHours,
+    sunday: defaultWeekendHours,
   })
 
   // Form validation
@@ -69,8 +53,6 @@ export function TennisCourtForm({ court }: TennisCourtFormProps) {
     name?: string
     address?: string
     description?: string
-    latitude?: string
-    longitude?: string
   }>({})
 
   const handleOpeningHoursChange = (day: string, type: "open" | "close", value: string) => {
@@ -88,8 +70,6 @@ export function TennisCourtForm({ court }: TennisCourtFormProps) {
       name?: string
       address?: string
       description?: string
-      latitude?: string
-      longitude?: string
     } = {}
 
     if (!name.trim()) {
@@ -104,20 +84,22 @@ export function TennisCourtForm({ court }: TennisCourtFormProps) {
       newErrors.description = "Opis kortu jest wymagany"
     }
 
-    if (!latitude.trim() || isNaN(Number(latitude))) {
-      newErrors.latitude = "Szerokość geograficzna musi być liczbą"
-    }
-
-    if (!longitude.trim() || isNaN(Number(longitude))) {
-      newErrors.longitude = "Długość geograficzna musi być liczbą"
-    }
-
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!session) {
+      toast({
+        title: "Wymagane logowanie",
+        description: "Musisz być zalogowany, aby zgłosić kort.",
+        variant: "destructive",
+      })
+      router.push("/login")
+      return
+    }
 
     if (!validateForm()) {
       return
@@ -131,8 +113,8 @@ export function TennisCourtForm({ court }: TennisCourtFormProps) {
         address,
         description,
         imageUrl,
-        latitude: Number.parseFloat(latitude),
-        longitude: Number.parseFloat(longitude),
+        latitude: latitude ? Number.parseFloat(latitude) : null,
+        longitude: longitude ? Number.parseFloat(longitude) : null,
         features: features
           .split(",")
           .map((f) => f.trim())
@@ -140,32 +122,37 @@ export function TennisCourtForm({ court }: TennisCourtFormProps) {
         openingHours,
       }
 
-      console.log("Submitting court data:", courtData)
+      const result = await submitTennisCourt(courtData)
 
-      if (court) {
-        // Aktualizacja istniejącego kortu
-        await updateTennisCourt(court.id, courtData)
+      if (result.success) {
         toast({
-          title: "Kort zaktualizowany",
-          description: `Kort "${name}" został pomyślnie zaktualizowany.`,
+          title: "Kort zgłoszony",
+          description: "Twoje zgłoszenie zostało przyjęte i oczekuje na weryfikację przez administratora.",
         })
+
+        // Reset form
+        setName("")
+        setAddress("")
+        setDescription("")
+        setImageUrl("/images/court-default.png")
+        setLatitude("")
+        setLongitude("")
+        setFeatures("")
+
+        router.refresh()
+        router.push("/")
       } else {
-        // Dodawanie nowego kortu
-        await addTennisCourt(courtData)
         toast({
-          title: "Kort dodany",
-          description: `Kort "${name}" został pomyślnie dodany.`,
+          title: "Błąd",
+          description: result.error || "Wystąpił błąd podczas zgłaszania kortu.",
+          variant: "destructive",
         })
       }
-
-      // Odśwież stronę i przekieruj do listy kortów
-      router.refresh()
-      router.push("/admin/courts")
     } catch (error) {
       console.error("Error submitting form:", error)
       toast({
         title: "Błąd",
-        description: "Wystąpił błąd podczas zapisywania kortu.",
+        description: "Wystąpił nieoczekiwany błąd podczas zgłaszania kortu.",
         variant: "destructive",
       })
     } finally {
@@ -176,7 +163,14 @@ export function TennisCourtForm({ court }: TennisCourtFormProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{court ? "Edytuj kort tenisowy" : "Dodaj nowy kort tenisowy"}</CardTitle>
+        <CardTitle>Zgłoś nowy kort tenisowy</CardTitle>
+        <CardDescription>
+          {session?.user ? (
+            "Wypełnij formularz, aby zgłosić nowy kort tenisowy. Po weryfikacji przez administratora kort zostanie dodany do bazy."
+          ) : (
+            "Zaloguj się, aby zgłosić nowy kort tenisowy."
+          )}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -217,35 +211,31 @@ export function TennisCourtForm({ court }: TennisCourtFormProps) {
               {errors.description && <p className="text-sm text-destructive">{errors.description}</p>}
             </div>
 
-            <div className="space-y-2">
-              <ImageUpload
-                value={imageUrl}
-                onChange={setImageUrl}
-                label="Zdjęcie kortu"
-              />
-            </div>
+            <ImageUpload
+              value={imageUrl}
+              onChange={setImageUrl}
+              label="Zdjęcie kortu"
+            />
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="latitude">Szerokość geograficzna</Label>
+                <Label htmlFor="latitude">Szerokość geograficzna (opcjonalnie)</Label>
                 <Input
                   id="latitude"
                   value={latitude}
                   onChange={(e) => setLatitude(e.target.value)}
                   placeholder="np. 50.748"
                 />
-                {errors.latitude && <p className="text-sm text-destructive">{errors.latitude}</p>}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="longitude">Długość geograficzna</Label>
+                <Label htmlFor="longitude">Długość geograficzna (opcjonalnie)</Label>
                 <Input
                   id="longitude"
                   value={longitude}
                   onChange={(e) => setLongitude(e.target.value)}
                   placeholder="np. 19.178"
                 />
-                {errors.longitude && <p className="text-sm text-destructive">{errors.longitude}</p>}
               </div>
             </div>
 
@@ -304,21 +294,21 @@ export function TennisCourtForm({ court }: TennisCourtFormProps) {
             </div>
           </div>
 
-          <div className="flex justify-end space-x-2">
+          <div className="flex justify-end gap-4">
             <Button
               type="button"
               variant="outline"
-              onClick={() => router.push("/admin/courts")}
+              onClick={() => router.push("/")}
               disabled={isSubmitting}
             >
               Anuluj
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Zapisywanie..." : court ? "Zapisz zmiany" : "Dodaj kort"}
+              {isSubmitting ? "Zgłaszanie..." : "Zgłoś kort"}
             </Button>
           </div>
         </form>
       </CardContent>
     </Card>
   )
-}
+} 

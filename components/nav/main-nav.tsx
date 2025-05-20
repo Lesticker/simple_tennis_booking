@@ -13,25 +13,35 @@ export function MainNav() {
         <Link href="/" className="font-bold">
           Tennis Courts
         </Link>
+        <div className="ml-8 flex items-center space-x-4">
+          <Link href="/submit-court">
+            <Button variant="ghost">Zgłoś kort</Button>
+          </Link>
+        </div>
         <div className="ml-auto flex items-center space-x-4">
           {session?.user ? (
             <>
               {session.user.role === "ADMIN" && (
-                <Link href="/admin">
-                  <Button variant="ghost">Admin</Button>
-                </Link>
+                <>
+                  <Link href="/admin/courts">
+                    <Button variant="ghost">Panel admina</Button>
+                  </Link>
+                  <Link href="/admin/pending-courts">
+                    <Button variant="ghost">Korty do akceptacji</Button>
+                  </Link>
+                </>
               )}
               <Button variant="ghost" onClick={() => signOut()}>
-                Sign Out
+                Wyloguj się
               </Button>
             </>
           ) : (
             <>
               <Link href="/login">
-                <Button variant="ghost">Sign In</Button>
+                <Button variant="ghost">Zaloguj się</Button>
               </Link>
               <Link href="/register">
-                <Button variant="default">Sign Up</Button>
+                <Button variant="default">Zarejestruj się</Button>
               </Link>
             </>
           )}
