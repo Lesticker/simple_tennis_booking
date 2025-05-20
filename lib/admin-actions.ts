@@ -26,8 +26,10 @@ export async function deleteTennisCourt(id: string) {
       throw new Error(result.error || "Court not found")
     }
 
+    // Make sure to revalidate all relevant paths
     revalidatePath("/")
     revalidatePath("/admin/courts")
+    revalidatePath("/admin/pending-courts")
     return { success: true }
   } catch (error) {
     console.error("Error deleting tennis court:", error)

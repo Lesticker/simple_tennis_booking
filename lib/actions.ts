@@ -254,8 +254,11 @@ export async function submitTennisCourt(data: Omit<TennisCourt, "id" | "createdA
       submittedById: userData.id // Track who submitted the court
     });
 
+    console.log("Successfully created new court with ID:", newCourt.id, "and status:", newCourt.status);
+
     revalidatePath("/")
     revalidatePath("/admin/courts")
+    revalidatePath("/admin/pending-courts") // Explicitly revalidate pending courts
     return { success: true, court: newCourt }
   } catch (error) {
     console.error("Error submitting tennis court:", error)

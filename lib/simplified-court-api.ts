@@ -9,16 +9,28 @@ import type { CourtStatus } from "@/lib/types"
  */
 export async function getPendingCourts() {
   try {
-    // Use raw SQL to avoid Prisma type issues
+    console.log("Fetching pending courts...");
+    
+    // Use raw SQL to avoid Prisma type issues - with improved logging
     const courts = await db.$queryRaw`
       SELECT * FROM "TennisCourt" 
       WHERE "status" = 'PENDING'::"CourtStatus" 
       ORDER BY "createdAt" DESC
-    `
-    return { success: true, courts }
+    `;
+    
+    console.log(`Found ${Array.isArray(courts) ? courts.length : 0} pending courts`);
+    
+    // Add debug logging for each court
+    if (Array.isArray(courts)) {
+      courts.forEach((court, index) => {
+        console.log(`Pending court ${index + 1}: ID=${court.id}, Name=${court.name}, Status=${court.status}`);
+      });
+    }
+    
+    return { success: true, courts };
   } catch (error) {
-    console.error("Error fetching pending courts:", error)
-    return { success: false, courts: [] }
+    console.error("Error fetching pending courts:", error);
+    return { success: false, courts: [] };
   }
 }
 

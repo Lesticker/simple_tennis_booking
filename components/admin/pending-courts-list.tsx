@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -41,6 +41,12 @@ export function PendingCourtsList({ courts }: PendingCourtsListProps) {
   const [isProcessing, setIsProcessing] = useState(false)
   const [courtToDelete, setCourtToDelete] = useState<TennisCourtRaw | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  // Force refresh when any operation completes
+  useEffect(() => {
+    router.refresh()
+  }, [refreshKey, router])
 
   const handleStatusUpdate = async (courtId: string, status: CourtStatus) => {
     try {
@@ -54,7 +60,7 @@ export function PendingCourtsList({ courts }: PendingCourtsListProps) {
             ? "Kort został zaakceptowany i jest teraz widoczny publicznie."
             : "Kort został odrzucony.",
         })
-        router.refresh()
+        setRefreshKey(prev => prev + 1) // Trigger refresh
       } else {
         toast({
           title: "Błąd",
@@ -88,7 +94,7 @@ export function PendingCourtsList({ courts }: PendingCourtsListProps) {
         title: "Kort usunięty",
         description: `Kort "${courtToDelete.name}" został pomyślnie usunięty.`,
       })
-      router.refresh()
+      setRefreshKey(prev => prev + 1) // Trigger refresh
     } catch (error) {
       toast({
         title: "Błąd",
@@ -175,6 +181,15 @@ export function PendingCourtsList({ courts }: PendingCourtsListProps) {
                           >
                             <Check className="h-4 w-4 text-green-500" />
                             <span className="sr-only">Zaakceptuj</span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleStatusUpdate(court.id, "REJECTED")}
+                            disabled={isProcessing}
+                          >
+                            <X className="h-4 w-4 text-red-500" />
+                            <span className="sr-only">Odrzuć</span>
                           </Button>
                           <Button
                             variant="outline"
