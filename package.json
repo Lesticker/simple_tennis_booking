@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
-    "migrate-data": "ts-node -T prisma/migrate-data.ts"
+    "migrate-data": "ts-node -T prisma/migrate-data.ts",
+    "netlify-build": "npm run postinstall && next build"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.9.1",

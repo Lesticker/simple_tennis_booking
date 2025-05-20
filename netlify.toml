@@ -1,9 +1,10 @@
 [build]
-  command = "pnpm install --no-frozen-lockfile && pnpm run build"
+  command = "npm ci && npm run netlify-build"
   publish = ".next"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
 [build.environment]
-  NPM_FLAGS = "--no-frozen-lockfile"
+  NODE_VERSION = "22.15.1"
+  NPM_FLAGS = "--no-optional"
