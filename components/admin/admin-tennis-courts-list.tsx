@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button"
 import { Edit, Trash2, Eye } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import { deleteTennisCourt } from "@/lib/admin-actions"
+import { deleteTennisCourt, updateTennisCourt } from "@/lib/admin-actions"
 import { useRouter } from "next/navigation"
 import { toast } from "@/components/ui/use-toast"
+import { Switch } from "@/components/ui/switch"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,6 +30,7 @@ export function AdminTennisCourtsList({ tennisCourts }: AdminTennisCourtsListPro
   const router = useRouter()
   const [isDeleting, setIsDeleting] = useState(false)
   const [courtToDelete, setCourtToDelete] = useState<RawTennisCourt | null>(null)
+  const [loadingReservationToggles, setLoadingReservationToggles] = useState<Record<string, boolean>>({})
 
   const handleDeleteClick = (court: RawTennisCourt) => {
     setCourtToDelete(court)
@@ -59,6 +61,27 @@ export function AdminTennisCourtsList({ tennisCourts }: AdminTennisCourtsListPro
 
   const handleDeleteCancel = () => {
     setCourtToDelete(null)
+  }
+
+  const handleReservationsToggle = async (courtId: string, currentValue: boolean) => {
+    setLoadingReservationToggles(prev => ({ ...prev, [courtId]: true }))
+    
+    try {
+      await updateTennisCourt(courtId, { reservationsEnabled: !currentValue })
+      toast({
+        title: "Zmieniono status rezerwacji",
+        description: `Rezerwacje dla kortu zostały ${!currentValue ? 'włączone' : 'wyłączone'}.`,
+      })
+      router.refresh()
+    } catch (error) {
+      toast({
+        title: "Błąd",
+        description: "Wystąpił błąd podczas zmiany statusu rezerwacji.",
+        variant: "destructive",
+      })
+    } finally {
+      setLoadingReservationToggles(prev => ({ ...prev, [courtId]: false }))
+    }
   }
 
   // Funkcja do formatowania statusu kortu
@@ -103,6 +126,7 @@ export function AdminTennisCourtsList({ tennisCourts }: AdminTennisCourtsListPro
                   <th className="text-left py-3 px-4">Nazwa</th>
                   <th className="text-left py-3 px-4">Adres</th>
                   <th className="text-left py-3 px-4">Status</th>
+                  <th className="text-left py-3 px-4">Rezerwacje</th>
                   <th className="text-left py-3 px-4">Akcje</th>
                 </tr>
               </thead>
@@ -123,6 +147,18 @@ export function AdminTennisCourtsList({ tennisCourts }: AdminTennisCourtsListPro
                     <td className="py-3 px-4 font-medium">{court.name}</td>
                     <td className="py-3 px-4 text-muted-foreground">{court.address}</td>
                     <td className="py-3 px-4">{getStatusBadge(court.status)}</td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center space-x-2">
+                        <Switch 
+                          checked={!!court.reservationsEnabled} 
+                          disabled={loadingReservationToggles[court.id]}
+                          onCheckedChange={() => handleReservationsToggle(court.id, !!court.reservationsEnabled)}
+                        />
+                        <span className="text-sm text-muted-foreground">
+                          {court.reservationsEnabled ? 'Włączone' : 'Wyłączone'}
+                        </span>
+                      </div>
+                    </td>
                     <td className="py-3 px-4">
                       <div className="flex space-x-2">
                         <Link href={`/courts/${court.id}`}>

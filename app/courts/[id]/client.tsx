@@ -8,6 +8,8 @@ import { useState } from "react"
 import { Booking } from "@prisma/client"
 import { deleteBookingDb } from "@/lib/actions"
 import { RawTennisCourt } from "@/lib/types"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { CalendarOff } from "lucide-react"
 
 interface TennisCourtPageClientProps {
   court: RawTennisCourt
@@ -44,16 +46,27 @@ export default function TennisCourtPageClient({ court, bookings }: TennisCourtPa
     <div className="container mx-auto py-8 px-4">
       <TennisCourtDetails court={court} />
 
-      <div className="mt-8">
-        <h2 className="text-2xl font-bold mb-6">Zarezerwuj ten kort</h2>
-        <div className="grid gap-8 md:grid-cols-[1fr_300px]">
-          <BookingCalendar 
-            bookings={bookings} 
-            onSelectEvent={handleBookingSelect}
-          />
-          <BookingForm courtId={court.id} />
+      {court.reservationsEnabled !== false ? (
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold mb-6">Zarezerwuj ten kort</h2>
+          <div className="grid gap-8 md:grid-cols-[1fr_300px]">
+            <BookingCalendar 
+              bookings={bookings} 
+              onSelectEvent={handleBookingSelect}
+            />
+            <BookingForm courtId={court.id} />
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="mt-8">
+          <Alert>
+            <CalendarOff className="h-4 w-4 mr-2" />
+            <AlertDescription>
+              Rezerwacje są obecnie wyłączone dla tego kortu.
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
 
       {selectedBooking && (
         <BookingDetails

@@ -29,6 +29,7 @@ export type TennisCourt = Omit<PrismaTennisCourt, "createdAt" | "updatedAt"> & {
       close: string
     }
   }
+  reservationsEnabled: boolean
 }
 
 // Type for raw SQL query result court
@@ -43,6 +44,7 @@ export interface RawTennisCourt {
   features: string[] | string // może być string (JSON) lub już sparsowana tablica
   openingHours: string | { [key: string]: { open: string, close: string } } // może być string (JSON) lub już sparsowany obiekt
   status: string
+  reservationsEnabled?: boolean
   createdAt: string | Date
   updatedAt: string | Date
 }

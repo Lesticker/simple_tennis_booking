@@ -198,13 +198,6 @@ export function TennisCourtsMap({ tennisCourts }: TennisCourtsMapProps) {
         ) : (
           <div ref={mapRef} className="w-full h-[500px] rounded-md" />
         )}
-        <div className="mt-2 text-xs text-muted-foreground">
-          {tennisCourts.map((court) => (
-            <p key={court.id}>
-              {court.name}: {court.latitude}, {court.longitude}
-            </p>
-          ))}
-        </div>
       </CardContent>
     </Card>
   )

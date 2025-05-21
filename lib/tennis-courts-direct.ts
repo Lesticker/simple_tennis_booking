@@ -219,6 +219,16 @@ export async function updateTennisCourtDirect(id: string, data: any) {
       params.push(data.longitude);
     }
     
+    if (data.status !== undefined) {
+      updateFields.push(`"status" = $${params.length + 1}::"CourtStatus"`);
+      params.push(data.status);
+    }
+    
+    if (data.reservationsEnabled !== undefined) {
+      updateFields.push(`"reservationsEnabled" = $${params.length + 1}`);
+      params.push(data.reservationsEnabled);
+    }
+    
     if (data.features !== undefined) {
       // Przekształć tablicę cech na format akceptowalny przez PostgreSQL
       const featuresArray = Array.isArray(data.features) ? data.features : [];

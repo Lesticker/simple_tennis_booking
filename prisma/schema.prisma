@@ -54,20 +54,21 @@ model Booking {
 }
 
 model TennisCourt {
-  id           String    @id @default(uuid())
-  name         String
-  address      String
-  description  String
-  imageUrl     String
-  latitude     Float?    // Making latitude optional
-  longitude    Float?    // Making longitude optional
-  features     String[]
-  openingHours Json      // This will store the opening hours as JSON
-  status       CourtStatus @default(PENDING)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  bookings     Booking[]
-  submittedById String?    // ID użytkownika, który zgłosił kort
+  id                String    @id @default(uuid())
+  name              String
+  address           String
+  description       String
+  imageUrl          String
+  latitude          Float?    // Making latitude optional
+  longitude         Float?    // Making longitude optional
+  features          String[]
+  openingHours      Json      // This will store the opening hours as JSON
+  status            CourtStatus @default(PENDING)
+  reservationsEnabled Boolean  @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  bookings          Booking[]
+  submittedById     String?    // ID użytkownika, który zgłosił kort
 
   @@index([status])
 }

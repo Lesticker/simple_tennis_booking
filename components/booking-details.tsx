@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { deleteBookingDb } from "@/lib/actions"
 import { toast } from "@/components/ui/use-toast"
-import type { Booking } from "@/lib/types"
+import { Booking } from "@prisma/client"
 
 interface BookingDetailsProps {
   booking: Booking | null

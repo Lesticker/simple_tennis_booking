@@ -6,11 +6,11 @@ import { pl } from "date-fns/locale"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, CalendarIcon } from "lucide-react"
-import type { Booking } from "@/lib/types"
+import { Booking } from "@prisma/client"
 
 interface BookingCalendarProps {
   bookings: Booking[]
-  onSelectEvent?: (event: any) => void
+  onSelectEvent?: (event: Booking) => void
 }
 
 // Funkcja pomocnicza do generowania dni w miesiącu
